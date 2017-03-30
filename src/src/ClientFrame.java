@@ -58,6 +58,8 @@ public class ClientFrame extends javax.swing.JFrame {
         clearButton = new javax.swing.JButton();
         testMaster_btn = new javax.swing.JButton();
         testVisa_btn = new javax.swing.JButton();
+        french_btn = new javax.swing.JButton();
+        eng_btn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Credit Card Validator");
@@ -97,10 +99,16 @@ public class ClientFrame extends javax.swing.JFrame {
         inputPanel.add(cardTypeLabel);
 
         cardTypeCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Laser", "Visa", "Mastercard" }));
+        cardTypeCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cardTypeComboActionPerformed(evt);
+            }
+        });
         inputPanel.add(cardTypeCombo);
 
         getContentPane().add(inputPanel, java.awt.BorderLayout.CENTER);
 
+        submitButton.setBackground(new java.awt.Color(153, 255, 255));
         submitButton.setText("Submit");
         submitButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -132,6 +140,12 @@ public class ClientFrame extends javax.swing.JFrame {
             }
         });
         buttonPanel.add(testVisa_btn);
+
+        french_btn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/france.png"))); // NOI18N
+        buttonPanel.add(french_btn);
+
+        eng_btn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/united_kingdom.png"))); // NOI18N
+        buttonPanel.add(eng_btn);
 
         getContentPane().add(buttonPanel, java.awt.BorderLayout.SOUTH);
 
@@ -216,6 +230,10 @@ public class ClientFrame extends javax.swing.JFrame {
         cvvTextfield.setText("578");
     }//GEN-LAST:event_testVisa_btnActionPerformed
 
+    private void cardTypeComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cardTypeComboActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cardTypeComboActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -269,7 +287,9 @@ public class ClientFrame extends javax.swing.JFrame {
     private javax.swing.JLabel cvvLabel;
     private javax.swing.JTextField cvvTextfield;
     private javax.swing.JTextField dateTextfield;
+    private javax.swing.JButton eng_btn;
     private javax.swing.JLabel expiryDateLabel;
+    private javax.swing.JButton french_btn;
     private javax.swing.JPanel inputPanel;
     private javax.swing.JButton submitButton;
     private javax.swing.JButton testMaster_btn;
