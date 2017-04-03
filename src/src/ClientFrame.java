@@ -280,12 +280,16 @@ public class ClientFrame extends javax.swing.JFrame {
         // java.util.ResourceBundle.getBundle("MyResourceBundle_en");
         rb = ResourceBundle.getBundle("MyResourceBundle", locales[0]); //get English
         upDateStringsLang();
+        inputPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Please Enter Your Details"));
+
     }//GEN-LAST:event_eng_btnActionPerformed
 
     private void french_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_french_btnActionPerformed
         // FRENCH
         rb = ResourceBundle.getBundle("MyResourceBundle", locales[1]); //get Francais
         upDateStringsLang();
+        inputPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Veuillez saisir vos coordonnées"));
+
     }//GEN-LAST:event_french_btnActionPerformed
 
     /**
@@ -387,7 +391,6 @@ public class ClientFrame extends javax.swing.JFrame {
         java.util.ResourceBundle.getBundle("MyResourceBundle_en").getString("Enter_Details");
 //        java.util.ResourceBundle.getBundle("MyResourceBundle_en").getString("Enter_CardNumber");
 //        inputPanel.getName(rb.getString("Enter_Details"));
-        
         cardNumberLabel.setText(rb.getString("Enter_CardNumber"));
         expiryDateLabel.setText(rb.getString("Enter_ExpiryDate"));
         cvvLabel.setText(rb.getString("Enter_CVV"));

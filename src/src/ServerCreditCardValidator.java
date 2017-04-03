@@ -6,6 +6,7 @@ import java.net.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import javax.sql.RowSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Level;
@@ -45,7 +46,19 @@ import javax.swing.JOptionPane;
 // ref: JDBC exercise DBLab05 solutions
  */
 public class ServerCreditCardValidator {
+    
+    // init Client details
+    private static InetAddress clientInetAddress = null;
+    private static String clientIP = "";
+    private static String clientHostName = "";
 
+    public static String getClientIP() { return clientIP; }
+
+    public static void setClientIP(String clientIP) { ServerCreditCardValidator.clientIP = clientIP; }
+
+    
+    
+    
     public static void main(String[] args) {
         
         System.out.println("Server started and is awaiting connections");
@@ -64,9 +77,9 @@ public class ServerCreditCardValidator {
                 System.out.println("Start thread for client " + clientNo);
 
                 // Find the client's host name, and IP address. Not functionally important in exam situation..
-                InetAddress clientInetAddress = connectToClient.getInetAddress();
-                String clientIP = clientInetAddress.getHostAddress();
-                String clientHostName = clientInetAddress.getHostName();
+                clientInetAddress = connectToClient.getInetAddress();
+                clientIP = clientInetAddress.getHostAddress();
+                clientHostName = clientInetAddress.getHostName();
 
                 System.out.println("Client " + clientNo + "'s host name is " + clientHostName);
                 System.out.println("Client " + clientNo + "'s IP Address is " + clientIP);
@@ -100,7 +113,7 @@ class HandleAClient extends Thread {
     private static int cvv;
 
     private static boolean isValid;
-
+    
     
     //this stream will be used to WRITE a card object to a FILE
     //private static ObjectOutputStream fileObjectOutputStream;
@@ -163,11 +176,68 @@ class HandleAClient extends Thread {
 
                 validCardOutputStream.writeBoolean(isValid);//tell the Client is CardNumber Valid?
              
+                /*---------------------------------------
+                MySQL DataBase Queries/Inserts
+                ---------------------------------------*/
+                DBConnection.doConnection();
+                DBConnection.getAllRecords();
+                
+                //variables
+                String insCardNumber  = cardNumber;
+                String insCardClientIP = ServerCreditCardValidator.getClientIP();
+                String insCardHolderName = cardHolderName;
+                String insCardType = cardType;
+                
+                System.out.println("=====================\ninserting the following..." + 
+                        "\nCardNumber: " + insCardNumber +
+                        "\nClientIP: " + insCardClientIP +
+                        "\nName: " + insCardHolderName +
+                        "\nCardType: " + insCardType);
+                
+                //moves to end of the Table to create a place for the insertion of a new row into the RowSet
+                DBConnection.rowSet.moveToInsertRow(); 
+                
+                // use variables insert in rowset
+                DBConnection.rowSet.updateString("card_Number", insCardNumber);
+                DBConnection.rowSet.updateString("card_ClientIPAddress", insCardClientIP);
+                DBConnection.rowSet.updateString("card_HolderName", insCardHolderName);
+                DBConnection.rowSet.updateString("card_Type", insCardType);
+
+                DBConnection.rowSet.insertRow(); // insertRow is called to insert new empty row to update the RowSet
+                System.out.println("record inserted");
+                
+                //Show the table again
+                DBConnection.getAllRecords();
+                DBConnection.rowSet.absolute(1); //set the cursor to the first record
+                System.out.format("%-20s","Card Number");
+                System.out.format("%-20s","Client IP");
+                System.out.format("%-20s \n","Card Holder Name");
+                System.out.format("%-20s \n","Card Type"); 
+                while (DBConnection.rowSet.next()) {
+                    System.out.format("%-20s",DBConnection.rowSet.getString("card_Number"));
+                    System.out.format("%-20s",DBConnection.rowSet.getString("card_ClientIPAddress"));
+                    System.out.format("%-20s \n",DBConnection.rowSet.getString("card_HolderName"));
+                    System.out.format("%-20s \n",DBConnection.rowSet.getString("card_Type"));
+                }
+                System.out.println(">-----------------------------------------------------------------<\n\n");
+                //close all of the resources
+                DBConnection.rowSet.close();
+                DBConnection.connection.close();
+                System.out.println("All resources CLOSED\n\n");
+                System.out.println(">-----------------------------------------------------------------<\n\n");
+               
+                /*---------------------------------------
+                 --- end MySQL DataBase Queries/Inserts ---
+                ---------------------------------------*/
+   
             } // end try
         } catch (IOException ex) {
             System.err.println(ex);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(HandleAClient.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(HandleAClient.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("Error inserting to Cards Table");
         }
         
         
