@@ -8,10 +8,18 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Date;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import javax.swing.JOptionPane;
 /**
  *
- * @author alan.ryan
+ * @author K00223361 VINCENT LEE [DragonDream]
+ * Credit Card - exercise 
+ * - JFrame GUI
+ * - CreditCard Class / Object with getters/setters & constructor
+ * - Client Server (multi threaded)
+ * - internationalization
+ * - Java JDBC - MySQL (added in project properties : Library)
  */
 public class ClientFrame extends javax.swing.JFrame {
 
@@ -25,10 +33,29 @@ public class ClientFrame extends javax.swing.JFrame {
     
     // IP address of the server
     static String serverIP = "localhost";
-
-    /**
-     * Creates new form ClientFrame
-     */
+    
+    /*=====================*/
+    /*Internationalisation*/
+    /* see updateStringLanguage()*/
+    /*=====================*/
+    String languages[] = {"English", "French"};
+    Locale locales[] = { new Locale("en"), //0
+                            new Locale("fr") //1
+    };
+    
+    Locale locale; //init locale object 
+    Locale usa = new Locale("gb", "GB"); // create England locale object
+    Locale france = new Locale("fr", "FR"); // create France locale object
+    
+    //declare and create your resource bundle
+    static  ResourceBundle rb = ResourceBundle.getBundle("MyResourceBundle");
+    /*=====================*/
+    
+    
+    
+    /*=====================*/
+    /* Creates form ClientFrame*/
+    /*=====================*/
     public ClientFrame() {
         initComponents();
     } //end ClientFrame init method
@@ -69,6 +96,8 @@ public class ClientFrame extends javax.swing.JFrame {
 
         cardNumberLabel.setText("Enter Card Number");
         inputPanel.add(cardNumberLabel);
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("MyResourceBundle_en"); // NOI18N
+        cardNumberLabel.getAccessibleContext().setAccessibleName(bundle.getString("Enter_CardNumber")); // NOI18N
 
         cardNumberTextfield.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -107,6 +136,7 @@ public class ClientFrame extends javax.swing.JFrame {
         inputPanel.add(cardTypeCombo);
 
         getContentPane().add(inputPanel, java.awt.BorderLayout.CENTER);
+        inputPanel.getAccessibleContext().setAccessibleName(bundle.getString("Enter_Details")); // NOI18N
 
         submitButton.setBackground(new java.awt.Color(153, 255, 255));
         submitButton.setText("Submit");
@@ -142,9 +172,19 @@ public class ClientFrame extends javax.swing.JFrame {
         buttonPanel.add(testVisa_btn);
 
         french_btn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/france.png"))); // NOI18N
+        french_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                french_btnActionPerformed(evt);
+            }
+        });
         buttonPanel.add(french_btn);
 
         eng_btn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/united_kingdom.png"))); // NOI18N
+        eng_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                eng_btnActionPerformed(evt);
+            }
+        });
         buttonPanel.add(eng_btn);
 
         getContentPane().add(buttonPanel, java.awt.BorderLayout.SOUTH);
@@ -213,9 +253,9 @@ public class ClientFrame extends javax.swing.JFrame {
     private void testMaster_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testMaster_btnActionPerformed
         // set pre-built Laser Credit Card 
         cardNumberTextfield.setText("5555555555554444");
-        dateTextfield.setText("0320"); //MySQL takes YYYY-MM-DD, CreditCards are in mmyy
-        cardTypeCombo.setSelectedIndex(2); //Master
-        cardTypeCombo.getSelectedItem().toString(); //default is Laser
+        dateTextfield.setText("03202018"); //MySQL takes YYYY-MM-DD, CreditCards are in mmyy
+        cardTypeCombo.setSelectedIndex(2); //Master (default is Laser at [0])
+        cardTypeCombo.getSelectedItem().toString(); 
         cardNameTextfield.setText("John Smith"); 
         cvvTextfield.setText("457");
     }//GEN-LAST:event_testMaster_btnActionPerformed
@@ -223,9 +263,9 @@ public class ClientFrame extends javax.swing.JFrame {
     private void testVisa_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testVisa_btnActionPerformed
         // set pre-built Visa Credit Card  (don't forget to select Visa from combobox)
         cardNumberTextfield.setText("4222222222222");
-        dateTextfield.setText("0320"); //MySQL takes YYYY-MM-DD, CreditCards are in mmyy
-        cardTypeCombo.setSelectedIndex(1); //Visa
-        cardTypeCombo.getSelectedItem().toString(); //default is Laser
+        dateTextfield.setText("0320"); // MySQL takes YYYY-MM-DD, CreditCards are in mmyy
+        cardTypeCombo.setSelectedIndex(1); // Visa
+        cardTypeCombo.getSelectedItem().toString(); 
         cardNameTextfield.setText("John Smith"); 
         cvvTextfield.setText("578");
     }//GEN-LAST:event_testVisa_btnActionPerformed
@@ -233,6 +273,20 @@ public class ClientFrame extends javax.swing.JFrame {
     private void cardTypeComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cardTypeComboActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_cardTypeComboActionPerformed
+
+    private void eng_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eng_btnActionPerformed
+        // ENGLISH
+        // load a new resource bundle based on the selection of a new locale
+        // java.util.ResourceBundle.getBundle("MyResourceBundle_en");
+        rb = ResourceBundle.getBundle("MyResourceBundle", locales[0]); //get English
+        upDateStringsLang();
+    }//GEN-LAST:event_eng_btnActionPerformed
+
+    private void french_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_french_btnActionPerformed
+        // FRENCH
+        rb = ResourceBundle.getBundle("MyResourceBundle", locales[1]); //get Francais
+        upDateStringsLang();
+    }//GEN-LAST:event_french_btnActionPerformed
 
     /**
      * @param args the command line arguments
@@ -325,4 +379,29 @@ public class ClientFrame extends javax.swing.JFrame {
         return newCard; //will send this object to Server for validation
     }
 
+    /*------------------------*/
+    // English and French language set
+    /*------------------------*/
+    public void upDateStringsLang(){
+        //load a new resource bundle based on the selection of a new locale from the Button, if it was a combobox load the array index into the comboBox..
+        java.util.ResourceBundle.getBundle("MyResourceBundle_en").getString("Enter_Details");
+//        java.util.ResourceBundle.getBundle("MyResourceBundle_en").getString("Enter_CardNumber");
+//        inputPanel.getName(rb.getString("Enter_Details"));
+        
+        cardNumberLabel.setText(rb.getString("Enter_CardNumber"));
+        expiryDateLabel.setText(rb.getString("Enter_ExpiryDate"));
+        cvvLabel.setText(rb.getString("Enter_CVV"));
+        cardNameTextfield.setText(rb.getString("Enter_CardName"));
+        cardTypeLabel.setText(rb.getString("Enter_CardType"));
+        submitButton.setText(rb.getString("Submit_BTN"));
+        clearButton.setText(rb.getString("Clear_BTN"));
+        
+         
+    }
+    
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {                                   
+        DBConnection.closeConnection();
+        System.exit(0);
+    }          
+    
 } //end ClientFrame

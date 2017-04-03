@@ -1,14 +1,21 @@
 package src;
 
+import com.sun.rowset.JdbcRowSetImpl;
 import java.io.*;
 import java.net.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 /**
  *
- * @author k00223361 VINCENT LEE - DragonDream
- * Credit Card SERVER receive ObjectStream from CLIENT
+ * @author k00223361 VINCENT LEE - DragonDream Credit Card SERVER receive
+ * ObjectStream from CLIENT
  */
 /*=========
 //Part One
@@ -35,19 +42,21 @@ import java.util.logging.Logger;
 // pw: 'root'
 // ***NB*** include MySQLJDBC library driver in Project Settings
 // ref: https://www.mkyong.com/jdbc/jdbc-callablestatement-stored-procedure-out-parameter-example/
-*/
+// ref: JDBC exercise DBLab05 solutions
+ */
 public class ServerCreditCardValidator {
-    
-    
-    public static void main(String[] args) {    
+
+    public static void main(String[] args) {
+        
         System.out.println("Server started and is awaiting connections");
-        try{
+        try {
             //create a ServerSocket on port 8111
-            ServerSocket serverSocket = new ServerSocket (8111);
-            
+            ServerSocket serverSocket = new ServerSocket(8111);
+
             int clientNo = 1; // The number of a client
-            
-            while(true){ //keep listening for objects from Clients
+           
+            while (true) { //keep listening for objects from Clients
+                
                 //listen to requests on the ServerSocket and accept a connection when one arrives
                 Socket connectToClient = serverSocket.accept();
 
@@ -56,8 +65,11 @@ public class ServerCreditCardValidator {
 
                 // Find the client's host name, and IP address. Not functionally important in exam situation..
                 InetAddress clientInetAddress = connectToClient.getInetAddress();
-                System.out.println("Client " + clientNo + "'s host name is " + clientInetAddress.getHostName());
-                System.out.println("Client " + clientNo + "'s IP Address is "+ clientInetAddress.getHostAddress());
+                String clientIP = clientInetAddress.getHostAddress();
+                String clientHostName = clientInetAddress.getHostName();
+
+                System.out.println("Client " + clientNo + "'s host name is " + clientHostName);
+                System.out.println("Client " + clientNo + "'s IP Address is " + clientIP);
 
                 // Create a new thread for the connection
                 HandleAClient thread = new HandleAClient(connectToClient);
@@ -66,54 +78,57 @@ public class ServerCreditCardValidator {
                 clientNo++;// Increment clientNo    
             }//end while         
         } //end Try
-        catch (IOException ex){
+        catch (IOException ex) {
             System.out.println("An error has occured: " + ex);
             System.exit(0);
         }//end catch
-    
+
     }// end main
 
-}// end Server Class
+    public ServerCreditCardValidator() {
+    }
+}// end Server CreditCardValidator Class
 
 // Define the thread class for handling a new connection
 class HandleAClient extends Thread {
-    private String cardNumber;
-    private String expiryDate;
-    private String cardType;
-    private String cardHolderName;
-    private String cvvString;
-    private int cvv;
-    
-    private boolean isValid;
-    
-    //this stream will be used to READ a card object from a CLIENT 
-    private ObjectInputStream clientObjectInputStream;
+
+    private static String cardNumber;
+    private static String expiryDate;
+    private static String cardType;
+    private static String cardHolderName;
+    private static String cvvString;
+    private static int cvv;
+
+    private static boolean isValid;
+
     
     //this stream will be used to WRITE a card object to a FILE
     //private static ObjectOutputStream fileObjectOutputStream;
-    
-    // stream to write Boolean response to Client
-    private DataOutputStream validCardOutputStream;
 
     private Socket connectToClient; // A connected socket
 
-    /**Construct a thread*/
-    public HandleAClient(Socket socket)  {
+    /*===================
+     * Construct a thread
+     ===================*/
+    public HandleAClient(Socket socket) {   
         connectToClient = socket;
     }
 
-  /**Implement the run() method for the thread*/
+    /**--------------------------------------
+     * Implement the run() method for the thread
+     --------------------------------------*/
     public void run() {
-        try{
+        try {
             // Create data input and output streams
             //DataInputStream isFromClient = new DataInputStream(connectToClient.getInputStream());
             //DataOutputStream osToClient = new DataOutputStream(connectToClient.getOutputStream());
-            
-            //create a stream to the client to receive Object
+
+            //create a stream to receive Object from Client
             ObjectInputStream clientCardObjectInputStream = new ObjectInputStream(connectToClient.getInputStream());
-            // stream to receive Boolean response from Server
-            DataOutputStream validCardOutputStream = new DataOutputStream(connectToClient.getOutputStream());
             
+            // stream to write Boolean response to Client from Server
+            DataOutputStream validCardOutputStream = new DataOutputStream(connectToClient.getOutputStream());
+
             // Continuously serve the client
             while (true) {  //Main section that will change in different applications. Rest of server is boilerplate code
                 // Receive credit card object from the client
@@ -124,41 +139,40 @@ class HandleAClient extends Thread {
                 cvv = card.getCvv();
 
                 // Display radius on console
-                System.out.println("Card details received from client: " + 
-                        "\n cardNum: " + cardNumber +
-                        "\n type: " + cardType +
-                        "\n Name: " + cardHolderName +
-                        "\n cvv: " + cvv);
+                System.out.println("Card details received from client: "
+                        + "\n cardNum: " + cardNumber
+                        + "\n type: " + cardType
+                        + "\n Name: " + cardHolderName
+                        + "\n cvv: " + cvv);
 
                 // VISA?
-                if (cardType.equalsIgnoreCase("visa")){
+                if (cardType.equalsIgnoreCase("visa")) {
                     isValid = CreditCardUtility.checkVisa(cardNumber);
                     System.out.println("VISA card");
-                }
-
-                // MASTER CARD?
-                else if (cardType.equalsIgnoreCase("mastercard")){
+                } // MASTER CARD?
+                else if (cardType.equalsIgnoreCase("mastercard")) {
                     isValid = CreditCardUtility.checkMastercard(cardNumber);
                     System.out.println("MASTER card");
-                }
-
-                else if (cardType.equalsIgnoreCase("laser")){
+                } else if (cardType.equalsIgnoreCase("laser")) {
                     isValid = CreditCardUtility.checkLaser(cardNumber);
                     System.out.println("LASER card");
-                }
-
-                else{
+                } else {
                     isValid = false;
                     System.out.println("Credit Card Type isn't VISA / MASTERCARD / LASER for : " + cardNumber + "\n is invalid");
                 }
 
                 validCardOutputStream.writeBoolean(isValid);//tell the Client is CardNumber Valid?
-          }
-        }
-        catch(IOException ex) {
-          System.err.println(ex);
+             
+            } // end try
+        } catch (IOException ex) {
+            System.err.println(ex);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(HandleAClient.class.getName()).log(Level.SEVERE, null, ex);
         }
-      } //end run method for thread
-    } //end HandleAClient Class
+        
+        
+    } //end run method for thread
+
+} //end HandleAClient Class
+
+
